@@ -93,6 +93,7 @@ TEST_F(rnp_tests, test_load_v3_keyring_pgp)
 #endif
 }
 
+#ifdef ENABLE_CAST5
 /* This test loads a .gpg pubring with multiple V4 keys,
  * finds a particular key of interest, and confirms that
  * the appropriate key flags are set.
@@ -120,6 +121,7 @@ TEST_F(rnp_tests, test_load_v4_keyring_pgp)
     // cleanup
     delete key_store;
 }
+#endif
 
 /* Just a helper for the below test */
 static void
@@ -164,6 +166,7 @@ check_pgp_keyring_counts(const char *   path,
     delete key_store;
 }
 
+#ifdef ENABLE_CAST5
 /* This test loads a pubring.gpg and secring.gpg and confirms
  * that it contains the expected number of primary keys
  * and the expected number of subkeys for each primary key.
@@ -322,6 +325,7 @@ TEST_F(rnp_tests, test_load_check_bitfields_and_times)
     // cleanup
     delete key_store;
 }
+#endif
 
 /* This test loads a V3 keyring and confirms that certain
  * bitfields and time fields are set correctly.

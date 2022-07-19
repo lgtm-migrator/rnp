@@ -442,11 +442,13 @@ TEST_F(rnp_tests, test_stream_key_load)
     pgp_transferable_key_t *   key = NULL;
     pgp_transferable_subkey_t *skey = NULL;
 
+#ifdef ENABLE_CAST5
     /* public keyring, read-save-read-save armored-read */
     assert_rnp_success(init_file_src(&keysrc, "data/keyrings/1/pubring.gpg"));
     assert_rnp_success(process_pgp_keys(keysrc, keyseq, false));
     assert_true(keyseq.keys.size() > 1);
     src_close(&keysrc);
+#endif
 
     assert_rnp_success(init_file_dest(&keydst, "keyout.gpg", true));
     assert_true(write_transferable_keys(keyseq, &keydst, false));
@@ -464,11 +466,13 @@ TEST_F(rnp_tests, test_stream_key_load)
     assert_rnp_success(process_pgp_keys(keysrc, keyseq, false));
     src_close(&keysrc);
 
+#ifdef ENABLE_CAST5 // 1/secring.gpg uses CAST5
     /* secret keyring */
     assert_rnp_success(init_file_src(&keysrc, "data/keyrings/1/secring.gpg"));
     assert_rnp_success(process_pgp_keys(keysrc, keyseq, false));
     assert_true(keyseq.keys.size() > 1);
     src_close(&keysrc);
+#endif
 
     assert_rnp_success(init_file_dest(&keydst, "keyout-sec.gpg", true));
     assert_true(write_transferable_keys(keyseq, &keydst, false));
@@ -787,8 +791,10 @@ TEST_F(rnp_tests, test_stream_key_load_errors)
 
     const char *key_files[] = {"data/keyrings/4/rsav3-p.asc",
                                "data/keyrings/4/rsav3-s.asc",
+#ifdef ENABLE_CAST5
                                "data/keyrings/1/pubring.gpg",
                                "data/keyrings/1/secring.gpg",
+#endif
                                "data/test_stream_key_load/dsa-eg-pub.asc",
                                "data/test_stream_key_load/dsa-eg-sec.asc",
                                "data/test_stream_key_load/ecc-25519-pub.asc",
@@ -832,6 +838,7 @@ TEST_F(rnp_tests, test_stream_key_decrypt)
     pgp_transferable_key_t *   key = NULL;
     pgp_transferable_subkey_t *subkey = NULL;
 
+#ifdef ENABLE_CAST5
     /* load and decrypt secret keyring */
     assert_rnp_success(init_file_src(&keysrc, "data/keyrings/1/secring.gpg"));
     assert_rnp_success(process_pgp_keys(keysrc, keyseq, false));
@@ -845,6 +852,7 @@ TEST_F(rnp_tests, test_stream_key_decrypt)
         }
     }
     src_close(&keysrc);
+#endif
 
 #if defined(ENABLE_IDEA)
     /* armored v3 secret key */
@@ -918,6 +926,7 @@ TEST_F(rnp_tests, test_stream_key_decrypt)
     src_close(&keysrc);
 }
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_stream_key_encrypt)
 {
     pgp_source_t       keysrc = {0};
@@ -990,6 +999,7 @@ TEST_F(rnp_tests, test_stream_key_encrypt)
         }
     }
 }
+#endif
 
 TEST_F(rnp_tests, test_stream_key_signatures)
 {
@@ -1029,6 +1039,7 @@ TEST_F(rnp_tests, test_stream_key_signatures)
     assert_true(global_ctx.profile.del_rule(allow_md5));
     delete pubring;
 
+#ifdef ENABLE_CAST5
     /* keyring */
     pubring =
       new rnp_key_store_t(PGP_KEY_STORE_GPG, "data/keyrings/1/pubring.gpg", global_ctx);
@@ -1083,6 +1094,7 @@ TEST_F(rnp_tests, test_stream_key_signatures)
     }
 
     delete pubring;
+#endif
 }
 
 static bool
@@ -1126,6 +1138,7 @@ TEST_F(rnp_tests, test_stream_key_signature_validate)
     assert_false(pkey.valid());
     delete pubring;
 
+#ifdef ENABLE_CAST5
     /* keyring */
     pubring =
       new rnp_key_store_t(PGP_KEY_STORE_GPG, "data/keyrings/1/pubring.gpg", global_ctx);
@@ -1143,6 +1156,7 @@ TEST_F(rnp_tests, test_stream_key_signature_validate)
         i++;
     }
     delete pubring;
+#endif
 
     /* misc key files */
     assert_true(validate_key_sigs("data/test_stream_key_load/dsa-eg-pub.asc"));
@@ -1359,8 +1373,10 @@ TEST_F(rnp_tests, test_stream_dumper)
     pgp_dest_t     dst;
     rnp_dump_ctx_t ctx = {0};
 
+#ifdef ENABLE_CAST5
     assert_true(check_dump_file("data/keyrings/1/pubring.gpg", false, false));
     assert_true(check_dump_file("data/keyrings/1/secring.gpg", false, false));
+#endif
     assert_true(check_dump_file("data/keyrings/4/rsav3-p.asc", false, false));
     assert_true(check_dump_file("data/keyrings/4/rsav3-p.asc", true, true));
     assert_true(check_dump_file("data/keyrings/4/rsav3-s.asc", true, false));

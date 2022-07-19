@@ -152,8 +152,12 @@ static const id_str_pair symm_alg_map[] = {
   {PGP_SA_IDEA, "IDEA"},
 #endif
   {PGP_SA_TRIPLEDES, "TripleDES"},
+#if defined(ENABLE_CAST5)
   {PGP_SA_CAST5, "CAST5"},
+#endif
+#if defined(ENABLE_BLOWFISH)
   {PGP_SA_BLOWFISH, "Blowfish"},
+#endif
   {PGP_SA_AES_128, "AES-128"},
   {PGP_SA_AES_192, "AES-192"},
   {PGP_SA_AES_256, "AES-256"},
@@ -168,7 +172,9 @@ static const id_str_pair symm_alg_map[] = {
 static const id_str_pair hash_alg_map[] = {
   {PGP_HASH_MD5, "MD5"},
   {PGP_HASH_SHA1, "SHA1"},
+#if defined(ENABLE_RIPEMD160)
   {PGP_HASH_RIPEMD, "RIPEMD160"},
+#endif
   {PGP_HASH_SHA256, "SHA256"},
   {PGP_HASH_SHA384, "SHA384"},
   {PGP_HASH_SHA512, "SHA512"},

@@ -31,6 +31,7 @@
 #include "support.h"
 #include "crypto.h"
 
+#ifdef ENABLE_CAST5
 /* This test loads a .gpg keyring and tests protect/unprotect functionality.
  * There is also some lock/unlock testing in here, since the two are
  * somewhat related.
@@ -356,3 +357,4 @@ TEST_F(rnp_tests, test_key_protect_sec_data)
     assert_int_equal(ssubpkt->sec_protection.s2k.specifier, PGP_S2KS_ITERATED_AND_SALTED);
     delete ssubpkt;
 }
+#endif

@@ -57,6 +57,7 @@ TEST_F(rnp_tests, test_key_validate)
     rnp_key_store_t *secring;
     pgp_key_t *      key = NULL;
 
+#ifdef ENABLE_CAST5
     pubring =
       new rnp_key_store_t(PGP_KEY_STORE_GPG, "data/keyrings/1/pubring.gpg", global_ctx);
     assert_true(rnp_key_store_load_from_path(pubring, NULL));
@@ -76,6 +77,7 @@ TEST_F(rnp_tests, test_key_validate)
     assert_true(key->expired());
     assert_true(all_keys_valid(secring, key));
     delete secring;
+#endif
 
     pubring =
       new rnp_key_store_t(PGP_KEY_STORE_GPG, "data/keyrings/2/pubring.gpg", global_ctx);

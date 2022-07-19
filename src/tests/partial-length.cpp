@@ -60,6 +60,7 @@ dummy_reader(void *app_ctx, void *buf, size_t len, size_t *read)
     return true;
 }
 
+#ifdef ENABLE_CAST5
 static void
 test_partial_length_init(rnp_ffi_t *ffi, uint32_t key_flags)
 {
@@ -79,6 +80,7 @@ test_partial_length_init(rnp_ffi_t *ffi, uint32_t key_flags)
         assert_rnp_success(rnp_input_destroy(input));
     }
 }
+#endif
 
 TEST_F(rnp_tests, test_partial_length_public_key)
 {
@@ -93,6 +95,7 @@ TEST_F(rnp_tests, test_partial_length_public_key)
     assert_rnp_success(rnp_ffi_destroy(ffi));
 }
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_partial_length_signature)
 {
     rnp_ffi_t    ffi = NULL;
@@ -226,3 +229,4 @@ TEST_F(rnp_tests, test_partial_length_first_packet_length)
     assert_rnp_success(rnp_output_destroy(output));
     assert_rnp_success(rnp_ffi_destroy(ffi));
 }
+#endif

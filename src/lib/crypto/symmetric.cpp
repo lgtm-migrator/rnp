@@ -73,12 +73,12 @@ pgp_sa_to_botan_string(pgp_symm_alg_t alg)
         return "TripleDES";
 #endif
 
-#if defined(BOTAN_HAS_CAST)
+#if defined(BOTAN_HAS_CAST) && defined(ENABLE_CAST5)
     case PGP_SA_CAST5:
         return "CAST-128";
 #endif
 
-#if defined(BOTAN_HAS_BLOWFISH)
+#if defined(BOTAN_HAS_BLOWFISH) && defined(ENABLE_BLOWFISH)
     case PGP_SA_BLOWFISH:
         return "Blowfish";
 #endif
@@ -397,8 +397,12 @@ pgp_block_size(pgp_symm_alg_t alg)
     case PGP_SA_IDEA:
 #endif
     case PGP_SA_TRIPLEDES:
+#if defined(ENABLE_CAST5)
     case PGP_SA_CAST5:
+#endif
+#if defined(ENABLE_BLOWFISH)
     case PGP_SA_BLOWFISH:
+#endif
         return 8;
     case PGP_SA_AES_128:
     case PGP_SA_AES_192:
@@ -426,8 +430,12 @@ pgp_key_size(pgp_symm_alg_t alg)
 #if defined(ENABLE_IDEA)
     case PGP_SA_IDEA:
 #endif
+#if defined(ENABLE_CAST5)
     case PGP_SA_CAST5:
+#endif
+#if defined(ENABLE_BLOWFISH)
     case PGP_SA_BLOWFISH:
+#endif
     case PGP_SA_AES_128:
     case PGP_SA_CAMELLIA_128:
     case PGP_SA_SM4:

@@ -416,6 +416,7 @@ test_value_equal(const char *what, const char *expected_value, const uint8_t v[]
     return 0;
 }
 
+#ifdef ENABLE_CAST5
 void
 test_ffi_init(rnp_ffi_t *ffi)
 {
@@ -425,6 +426,7 @@ test_ffi_init(rnp_ffi_t *ffi)
     assert_true(
       load_keys_gpg(*ffi, "data/keyrings/1/pubring.gpg", "data/keyrings/1/secring.gpg"));
 }
+#endif
 
 bool
 mpi_empty(const pgp_mpi_t &val)
@@ -1240,6 +1242,36 @@ brainpool_enabled()
 {
     bool enabled = false;
     if (rnp_supports_feature(RNP_FEATURE_CURVE, "brainpoolP256r1", &enabled)) {
+        return false;
+    }
+    return enabled;
+}
+
+bool
+blowfish_enabled()
+{
+    bool enabled = false;
+    if (rnp_supports_feature(RNP_FEATURE_SYMM_ALG, "BLOWFISH", &enabled)) {
+        return false;
+    }
+    return enabled;
+}
+
+bool
+cast5_enabled()
+{
+    bool enabled = false;
+    if (rnp_supports_feature(RNP_FEATURE_SYMM_ALG, "CAST5", &enabled)) {
+        return false;
+    }
+    return enabled;
+}
+
+bool
+ripemd160_enabled()
+{
+    bool enabled = false;
+    if (rnp_supports_feature(RNP_FEATURE_HASH_ALG, "RIPEMD160", &enabled)) {
         return false;
     }
     return enabled;

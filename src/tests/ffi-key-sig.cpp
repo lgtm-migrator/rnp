@@ -32,6 +32,7 @@
 #include "rnp_tests.h"
 #include "support.h"
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_key_signatures)
 {
     rnp_ffi_t ffi = NULL;
@@ -153,6 +154,7 @@ TEST_F(rnp_tests, test_ffi_key_signatures)
     // cleanup
     rnp_ffi_destroy(ffi);
 }
+#endif
 
 static bool
 check_import_sigs(rnp_ffi_t ffi, json_object **jso, json_object **sigarr, const char *sigpath)
@@ -1490,6 +1492,7 @@ TEST_F(rnp_tests, test_ffi_rsa_small_sig)
     assert_rnp_success(rnp_ffi_destroy(ffi));
 }
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_key_critical_notations)
 {
     rnp_ffi_t ffi = NULL;
@@ -1546,6 +1549,7 @@ TEST_F(rnp_tests, test_ffi_key_critical_notations)
     rnp_output_destroy(output);
     rnp_ffi_destroy(ffi);
 }
+#endif
 
 TEST_F(rnp_tests, test_ffi_key_import_invalid_issuer)
 {

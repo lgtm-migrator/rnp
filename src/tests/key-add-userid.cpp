@@ -29,6 +29,7 @@
 #include "rnp_tests.h"
 #include "support.h"
 
+#ifdef ENABLE_CAST5
 /* This test loads a pgp keyring and adds a few userids to the key.
  */
 TEST_F(rnp_tests, test_key_add_userid)
@@ -221,3 +222,4 @@ TEST_F(rnp_tests, test_key_add_userid)
     // cleanup
     delete ks;
 }
+#endif

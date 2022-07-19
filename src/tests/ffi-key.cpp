@@ -1150,7 +1150,7 @@ TEST_F(rnp_tests, test_ffi_key_generate_ex)
     /* preferred ciphers */
     assert_rnp_success(rnp_op_generate_clear_pref_ciphers(keygen));
     assert_rnp_failure(rnp_op_generate_add_pref_cipher(keygen, "unknown"));
-    assert_rnp_success(rnp_op_generate_add_pref_cipher(keygen, "BLOWFISH"));
+    assert_true(!rnp_op_generate_add_pref_cipher(keygen, "BLOWFISH") == blowfish_enabled());
     assert_rnp_success(rnp_op_generate_clear_pref_ciphers(keygen));
     assert_rnp_success(rnp_op_generate_add_pref_cipher(keygen, "CAMELLIA256"));
     assert_rnp_success(rnp_op_generate_add_pref_cipher(keygen, "AES256"));
@@ -2255,6 +2255,7 @@ TEST_F(rnp_tests, test_ffi_key_to_json)
     rnp_ffi_destroy(ffi);
 }
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_key_iter)
 {
     rnp_ffi_t ffi = NULL;
@@ -2434,6 +2435,7 @@ TEST_F(rnp_tests, test_ffi_key_iter)
     // cleanup
     rnp_ffi_destroy(ffi);
 }
+#endif
 
 void
 check_loaded_keys(const char *                    format,
@@ -2490,6 +2492,7 @@ check_loaded_keys(const char *                    format,
     rnp_ffi_destroy(ffi);
 }
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_key_export)
 {
     rnp_ffi_t        ffi = NULL;
@@ -2693,6 +2696,7 @@ TEST_F(rnp_tests, test_ffi_key_export)
     // cleanup
     rnp_ffi_destroy(ffi);
 }
+#endif
 
 static bool
 check_import_keys_ex(rnp_ffi_t     ffi,
@@ -2942,6 +2946,7 @@ TEST_F(rnp_tests, test_ffi_elgamal4096)
     rnp_ffi_destroy(ffi);
 }
 
+#ifdef ENABLE_CAST5 // some of the files loaded use it
 TEST_F(rnp_tests, test_ffi_malformed_keys_import)
 {
     rnp_ffi_t   ffi = NULL;
@@ -3101,7 +3106,9 @@ TEST_F(rnp_tests, test_ffi_malformed_keys_import)
     /* cleanup */
     rnp_ffi_destroy(ffi);
 }
+#endif
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_iterated_key_import)
 {
     rnp_ffi_t   ffi = NULL;
@@ -3194,6 +3201,7 @@ TEST_F(rnp_tests, test_ffi_iterated_key_import)
 
     rnp_ffi_destroy(ffi);
 }
+#endif
 
 TEST_F(rnp_tests, test_ffi_stripped_keys_import)
 {
@@ -3852,6 +3860,7 @@ check_key_autocrypt(rnp_output_t       memout,
     return true;
 }
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_key_export_autocrypt)
 {
     rnp_ffi_t ffi = NULL;
@@ -4012,6 +4021,7 @@ TEST_F(rnp_tests, test_ffi_key_export_autocrypt)
 
     rnp_ffi_destroy(ffi);
 }
+#endif
 
 TEST_F(rnp_tests, test_ffi_keys_import_autocrypt)
 {

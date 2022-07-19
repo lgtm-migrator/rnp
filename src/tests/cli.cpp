@@ -475,6 +475,7 @@ TEST_F(rnp_tests, test_cli_rnp)
     int ret;
     assert_int_equal(0, call_rnp("rnp", "--version", NULL));
 
+#ifdef ENABLE_CAST5
     /* sign with default key */
     ret = call_rnp("rnp",
                    "--homedir",
@@ -490,6 +491,7 @@ TEST_F(rnp_tests, test_cli_rnp)
     ret = call_rnp(
       "rnp", "--homedir", KEYS "/1", "--encrypt", FILES "/hello.txt", "--overwrite", NULL);
     assert_int_equal(ret, 0);
+#endif
 
     /* sign and verify back with g10 key */
     ret = call_rnp("rnp",

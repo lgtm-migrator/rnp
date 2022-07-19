@@ -54,6 +54,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <stdexcept>
+#include <set>
 #include "utils.h"
 #include "str-utils.h"
 #include "json-utils.h"
@@ -182,6 +183,24 @@ static const id_str_pair symm_alg_map[] = {{PGP_SA_IDEA, RNP_ALGNAME_IDEA},
                                            {PGP_SA_SM4, RNP_ALGNAME_SM4},
                                            {0, NULL}};
 
+static const std::set<int> symm_alg_disabled = {
+#if !defined(ENABLE_SM2)
+  PGP_SA_SM4,
+#endif
+#if !defined(ENABLE_TWOFISH)
+  PGP_SA_TWOFISH,
+#endif
+#if !defined(ENABLE_IDEA)
+  PGP_SA_IDEA,
+#endif
+#if !defined(ENABLE_BLOWFISH)
+  PGP_SA_BLOWFISH,
+#endif
+#if !defined(ENABLE_CAST5)
+  PGP_SA_CAST5,
+#endif
+};
+
 static const id_str_pair aead_alg_map[] = {
   {PGP_AEAD_NONE, "None"}, {PGP_AEAD_EAX, "EAX"}, {PGP_AEAD_OCB, "OCB"}, {0, NULL}};
 
@@ -207,6 +226,15 @@ static const id_str_pair hash_alg_map[] = {{PGP_HASH_MD5, RNP_ALGNAME_MD5},
                                            {PGP_HASH_SHA3_512, RNP_ALGNAME_SHA3_512},
                                            {PGP_HASH_SM3, RNP_ALGNAME_SM3},
                                            {0, NULL}};
+
+static const std::set<int> hash_alg_disabled = {
+#if !defined(ENABLE_SM2)
+  PGP_HASH_SM3,
+#endif
+#if !defined(ENABLE_RIPEMD160)
+  PGP_HASH_RIPEMD,
+#endif
+};
 
 static const id_str_pair s2k_type_map[] = {
   {PGP_S2KS_SIMPLE, "Simple"},
@@ -285,6 +313,13 @@ curve_type_to_str(pgp_curve_t type, const char **str)
 }
 
 static bool
+set_contains(std::set<int> haystack, int needle)
+{
+    // set::contains() is available in C++20 and above.
+    return !(haystack.find(needle) == haystack.end());
+}
+
+static bool
 str_to_cipher(const char *str, pgp_symm_alg_t *cipher)
 {
     auto alg =
@@ -292,21 +327,9 @@ str_to_cipher(const char *str, pgp_symm_alg_t *cipher)
     if (alg == PGP_SA_UNKNOWN) {
         return false;
     }
-#if !defined(ENABLE_SM2)
-    if (alg == PGP_SA_SM4) {
+    if (set_contains(symm_alg_disabled, alg)) {
         return false;
     }
-#endif
-#if !defined(ENABLE_TWOFISH)
-    if (alg == PGP_SA_TWOFISH) {
-        return false;
-    }
-#endif
-#if !defined(ENABLE_IDEA)
-    if (alg == PGP_SA_IDEA) {
-        return false;
-    }
-#endif
     *cipher = alg;
     return true;
 }
@@ -319,11 +342,9 @@ str_to_hash_alg(const char *str, pgp_hash_alg_t *hash_alg)
     if (alg == PGP_HASH_UNKNOWN) {
         return false;
     }
-#if !defined(ENABLE_SM2)
-    if (alg == PGP_HASH_SM3) {
+    if (set_contains(hash_alg_disabled, alg)) {
         return false;
     }
-#endif
     *hash_alg = alg;
     return true;
 }
@@ -1012,6 +1033,20 @@ json_array_add_id_str(json_object *arr, const id_str_pair *map, int from, int to
     return RNP_SUCCESS;
 }
 
+static rnp_result_t
+json_array_add_id_str(json_object *arr, const id_str_pair *map, const std::set<int> disabled)
+{
+    while (map->str) {
+        if (!set_contains(disabled, map->id)) {
+            if (!array_add_element_json(arr, json_object_new_string(map->str))) {
+                return RNP_ERROR_OUT_OF_MEMORY;
+            }
+        }
+        map++;
+    }
+    return RNP_SUCCESS;
+}
+
 rnp_result_t
 rnp_supported_features(const char *type, char **result)
 try {
@@ -1027,18 +1062,7 @@ try {
     rnp_result_t ret = RNP_ERROR_BAD_PARAMETERS;
 
     if (rnp::str_case_eq(type, RNP_FEATURE_SYMM_ALG)) {
-#if defined(ENABLE_IDEA)
-        ret = json_array_add_id_str(features, symm_alg_map, PGP_SA_IDEA, PGP_SA_IDEA);
-#endif
-        ret = json_array_add_id_str(features, symm_alg_map, PGP_SA_TRIPLEDES, PGP_SA_AES_256);
-#if defined(ENABLE_TWOFISH)
-        ret = json_array_add_id_str(features, symm_alg_map, PGP_SA_TWOFISH, PGP_SA_TWOFISH);
-#endif
-        ret = json_array_add_id_str(
-          features, symm_alg_map, PGP_SA_CAMELLIA_128, PGP_SA_CAMELLIA_256);
-#if defined(ENABLE_SM2)
-        ret = json_array_add_id_str(features, symm_alg_map, PGP_SA_SM4, PGP_SA_SM4);
-#endif
+        ret = json_array_add_id_str(features, symm_alg_map, symm_alg_disabled);
     } else if (rnp::str_case_eq(type, RNP_FEATURE_AEAD_ALG)) {
 #if defined(ENABLE_AEAD)
         ret = json_array_add_id_str(features, aead_alg_map, PGP_AEAD_NONE, PGP_AEAD_OCB);
@@ -1056,10 +1080,7 @@ try {
         ret = json_array_add_id_str(features, pubkey_alg_map, PGP_PKA_SM2, PGP_PKA_SM2);
 #endif
     } else if (rnp::str_case_eq(type, RNP_FEATURE_HASH_ALG)) {
-        ret = json_array_add_id_str(features, hash_alg_map, PGP_HASH_MD5, PGP_HASH_SHA3_512);
-#if defined(ENABLE_SM2)
-        ret = json_array_add_id_str(features, hash_alg_map, PGP_HASH_SM3, PGP_HASH_SM3);
-#endif
+        ret = json_array_add_id_str(features, hash_alg_map, hash_alg_disabled);
     } else if (rnp::str_case_eq(type, RNP_FEATURE_COMP_ALG)) {
         ret = json_array_add_id_str(features, compress_alg_map, PGP_C_NONE, PGP_C_BZIP2);
     } else if (rnp::str_case_eq(type, RNP_FEATURE_CURVE)) {

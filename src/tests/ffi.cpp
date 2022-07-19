@@ -43,6 +43,7 @@
 #include "pgp-key.h"
 #include "ffi-priv-types.h"
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_homedir)
 {
     rnp_ffi_t ffi = NULL;
@@ -618,6 +619,7 @@ TEST_F(rnp_tests, test_ffi_load_save_keys_to_utf8_path)
     // final cleanup
     free(temp_dir);
 }
+#endif
 
 static size_t
 get_longest_line_length(const std::string &str, const std::set<std::string> lines_to_skip)
@@ -726,11 +728,18 @@ TEST_F(rnp_tests, test_ffi_add_userid)
     assert_int_equal(
       RNP_SUCCESS, rnp_key_add_uid(key_handle, new_userid, "SHA256", 2147317200, 0x00, false));
 
-    assert_rnp_success(
-      rnp_key_add_uid(key_handle, ripemd_hash_userid, "RIPEMD160", 2147317200, 0, false));
+    int uid_count_expected = 3;
+    int res =
+      rnp_key_add_uid(key_handle, ripemd_hash_userid, "RIPEMD160", 2147317200, 0, false);
+    if (ripemd160_enabled()) {
+        assert_rnp_success(res);
+        uid_count_expected++;
+    } else {
+        assert_rnp_failure(res);
+    }
 
     assert_rnp_success(rnp_key_get_uid_count(key_handle, &count));
-    assert_int_equal(4, count);
+    assert_int_equal(uid_count_expected, count);
 
     rnp_key_handle_t key_handle2 = NULL;
     assert_rnp_success(rnp_locate_key(ffi, "userid", new_userid, &key_handle2));
@@ -912,6 +921,7 @@ finish:
     return res;
 }
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_signatures_memory)
 {
     rnp_ffi_t       ffi = NULL;
@@ -1126,6 +1136,7 @@ TEST_F(rnp_tests, test_ffi_signatures_detached)
     signature = NULL;
     assert_rnp_success(rnp_ffi_destroy(ffi));
 }
+#endif
 
 TEST_F(rnp_tests, test_ffi_signatures_dump)
 {
@@ -2131,6 +2142,7 @@ void check_loaded_keys(const char *                    format,
                        const std::vector<std::string> &expected_ids,
                        bool                            secret);
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_key_export_customized_enarmor)
 {
     rnp_ffi_t             ffi = NULL;
@@ -2348,6 +2360,7 @@ TEST_F(rnp_tests, test_ffi_key_dump)
     rnp_key_handle_destroy(key);
     rnp_ffi_destroy(ffi);
 }
+#endif
 
 TEST_F(rnp_tests, test_ffi_key_dump_edge_cases)
 {
@@ -3016,7 +3029,9 @@ TEST_F(rnp_tests, test_ffi_supported_features)
     bool has_brainpool = brainpool_enabled();
     bool has_idea = idea_enabled();
     assert_true(
-      check_features(RNP_FEATURE_SYMM_ALG, features, 9 + has_sm2 + has_tf + has_idea));
+      check_features(RNP_FEATURE_SYMM_ALG,
+                     features,
+                     7 + has_sm2 + has_tf + has_idea + blowfish_enabled() + cast5_enabled()));
     rnp_buffer_destroy(features);
     bool supported = false;
     assert_rnp_failure(rnp_supports_feature(NULL, "IDEA", &supported));
@@ -3032,9 +3047,9 @@ TEST_F(rnp_tests, test_ffi_supported_features)
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_SYMM_ALG, "TRIPLEDES", &supported));
     assert_true(supported);
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_SYMM_ALG, "CAST5", &supported));
-    assert_true(supported);
+    assert_int_equal(supported, cast5_enabled());
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_SYMM_ALG, "BLOWFISH", &supported));
-    assert_true(supported);
+    assert_int_equal(supported, blowfish_enabled());
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_SYMM_ALG, "AES128", &supported));
     assert_true(supported);
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_SYMM_ALG, "AES192", &supported));
@@ -3060,9 +3075,9 @@ TEST_F(rnp_tests, test_ffi_supported_features)
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_SYMM_ALG, "tripledes", &supported));
     assert_true(supported);
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_SYMM_ALG, "cast5", &supported));
-    assert_true(supported);
+    assert_true(supported == cast5_enabled());
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_SYMM_ALG, "blowfish", &supported));
-    assert_true(supported);
+    assert_true(supported == blowfish_enabled());
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_SYMM_ALG, "aes128", &supported));
     assert_true(supported);
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_SYMM_ALG, "aes192", &supported));
@@ -3143,14 +3158,15 @@ TEST_F(rnp_tests, test_ffi_supported_features)
     /* hash algorithm */
     assert_rnp_success(rnp_supported_features(RNP_FEATURE_HASH_ALG, &features));
     assert_non_null(features);
-    assert_true(check_features(RNP_FEATURE_HASH_ALG, features, 9 + has_sm2));
+    assert_true(
+      check_features(RNP_FEATURE_HASH_ALG, features, 8 + has_sm2 + ripemd160_enabled()));
     rnp_buffer_destroy(features);
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_HASH_ALG, "MD5", &supported));
     assert_true(supported);
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_HASH_ALG, "SHA1", &supported));
     assert_true(supported);
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_HASH_ALG, "RIPEMD160", &supported));
-    assert_true(supported);
+    assert_true(supported == ripemd160_enabled());
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_HASH_ALG, "SHA256", &supported));
     assert_true(supported);
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_HASH_ALG, "SHA384", &supported));
@@ -3170,7 +3186,7 @@ TEST_F(rnp_tests, test_ffi_supported_features)
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_HASH_ALG, "sha1", &supported));
     assert_true(supported);
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_HASH_ALG, "ripemd160", &supported));
-    assert_true(supported);
+    assert_true(supported == ripemd160_enabled());
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_HASH_ALG, "sha256", &supported));
     assert_true(supported);
     assert_rnp_success(rnp_supports_feature(RNP_FEATURE_HASH_ALG, "sha384", &supported));
@@ -3384,6 +3400,7 @@ TEST_F(rnp_tests, test_ffi_rnp_guess_contents)
     rnp_input_destroy(input);
 }
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_literal_filename)
 {
     rnp_ffi_t     ffi = NULL;
@@ -4843,6 +4860,7 @@ TEST_F(rnp_tests, test_ffi_op_verify_recipients_info)
 
     rnp_ffi_destroy(ffi);
 }
+#endif
 
 TEST_F(rnp_tests, test_ffi_secret_sig_import)
 {
@@ -4966,6 +4984,7 @@ TEST_F(rnp_tests, test_ffi_rnp_request_password)
     assert_rnp_success(rnp_ffi_destroy(ffi));
 }
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_mdc_8k_boundary)
 {
     rnp_ffi_t   ffi = NULL;
@@ -5407,6 +5426,7 @@ TEST_F(rnp_tests, test_ffi_key_remove)
 
     rnp_ffi_destroy(ffi);
 }
+#endif
 
 TEST_F(rnp_tests, test_ffi_literal_packet)
 {
@@ -5513,6 +5533,7 @@ TEST_F(rnp_tests, test_ffi_exception)
     }
 }
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_key_protection_change)
 {
     rnp_ffi_t ffi = NULL;
@@ -5645,6 +5666,7 @@ TEST_F(rnp_tests, test_ffi_key_protection_change)
 
     rnp_ffi_destroy(ffi);
 }
+#endif
 
 TEST_F(rnp_tests, test_ffi_set_log_fd)
 {

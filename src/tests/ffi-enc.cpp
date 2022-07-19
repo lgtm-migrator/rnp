@@ -132,6 +132,7 @@ tbl_getkeycb(rnp_ffi_t   ffi,
     }
 }
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_encrypt_pass)
 {
     rnp_ffi_t        ffi = NULL;
@@ -277,6 +278,7 @@ TEST_F(rnp_tests, test_ffi_encrypt_pass)
     // final cleanup
     rnp_ffi_destroy(ffi);
 }
+#endif
 
 TEST_F(rnp_tests, test_ffi_encrypt_pass_provider)
 {
@@ -309,13 +311,13 @@ TEST_F(rnp_tests, test_ffi_encrypt_pass_provider)
     if (!sm2_enabled() && !twofish_enabled()) {
         assert_rnp_failure(rnp_op_encrypt_add_password(op, NULL, "SM3", 12345, "TWOFISH"));
         assert_rnp_failure(rnp_op_encrypt_add_password(op, NULL, "SHA256", 12345, "TWOFISH"));
-        assert_rnp_success(rnp_op_encrypt_add_password(op, NULL, "SHA256", 12345, "BLOWFISH"));
+        assert_rnp_success(rnp_op_encrypt_add_password(op, NULL, NULL, 12345, NULL));
     } else if (!sm2_enabled() && twofish_enabled()) {
         assert_rnp_failure(rnp_op_encrypt_add_password(op, NULL, "SM3", 12345, "TWOFISH"));
         assert_rnp_success(rnp_op_encrypt_add_password(op, NULL, "SHA256", 12345, "TWOFISH"));
     } else if (sm2_enabled() && !twofish_enabled()) {
         assert_rnp_failure(rnp_op_encrypt_add_password(op, NULL, "SM3", 12345, "TWOFISH"));
-        assert_rnp_success(rnp_op_encrypt_add_password(op, NULL, "SM3", 12345, "BLOWFISH"));
+        assert_rnp_success(rnp_op_encrypt_add_password(op, NULL, "SM3", 12345, NULL));
     } else {
         assert_rnp_success(rnp_op_encrypt_add_password(op, NULL, "SM3", 12345, "TWOFISH"));
     }
@@ -361,6 +363,7 @@ TEST_F(rnp_tests, test_ffi_encrypt_pass_provider)
     rnp_ffi_destroy(ffi);
 }
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_encrypt_pk)
 {
     rnp_ffi_t        ffi = NULL;
@@ -903,6 +906,7 @@ TEST_F(rnp_tests, test_ffi_encrypt_pk_subkey_selection)
 
     rnp_ffi_destroy(ffi);
 }
+#endif
 
 TEST_F(rnp_tests, test_ffi_decrypt_small_rsa)
 {
@@ -968,6 +972,7 @@ TEST_F(rnp_tests, test_ffi_decrypt_small_eg)
     rnp_ffi_destroy(ffi);
 }
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_encrypt_no_wrap)
 {
     rnp_ffi_t ffi = NULL;
@@ -1030,3 +1035,4 @@ TEST_F(rnp_tests, test_ffi_encrypt_no_wrap)
     // final cleanup
     rnp_ffi_destroy(ffi);
 }
+#endif

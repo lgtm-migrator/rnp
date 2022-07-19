@@ -27,6 +27,7 @@
 #include <rnp/rnp.h>
 #include "rnp_tests.h"
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_large_packet)
 {
     rnp_ffi_t       ffi = NULL;
@@ -52,3 +53,4 @@ TEST_F(rnp_tests, test_large_packet)
     assert_rnp_success(rnp_input_destroy(input));
     assert_rnp_success(rnp_ffi_destroy(ffi));
 }
+#endif

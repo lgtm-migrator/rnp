@@ -32,6 +32,7 @@
 #include "support.h"
 #include <fstream>
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_key_unlock_pgp)
 {
     cli_rnp_t               rnp = {};
@@ -219,3 +220,4 @@ TEST_F(rnp_tests, test_key_unlock_pgp)
     rnp.end();
     assert_int_equal(rnp_unlink("dummyfile.dat"), 0);
 }
+#endif

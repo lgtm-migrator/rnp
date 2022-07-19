@@ -1154,6 +1154,7 @@ TEST_F(rnp_tests, test_ffi_key_get_protection_info)
     rnp_ffi_destroy(ffi);
 }
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_ffi_key_default_subkey)
 {
     rnp_ffi_t        ffi = NULL;
@@ -1364,3 +1365,4 @@ TEST_F(rnp_tests, test_ffi_rnp_key_get_primary_fprint)
     // cleanup
     rnp_ffi_destroy(ffi);
 }
+#endif

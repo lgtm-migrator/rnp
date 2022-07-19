@@ -54,6 +54,7 @@ find_subsig(const pgp_key_t *key, const char *userid)
     return NULL;
 }
 
+#ifdef ENABLE_CAST5
 TEST_F(rnp_tests, test_load_user_prefs)
 {
     rnp_key_store_t *pubring =
@@ -125,3 +126,4 @@ TEST_F(rnp_tests, test_load_user_prefs)
     /* Cleanup */
     delete pubring;
 }
+#endif
